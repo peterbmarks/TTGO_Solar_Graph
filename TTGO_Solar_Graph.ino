@@ -1,10 +1,16 @@
+/*
+  Code for a Liligo TTGO ESP32 board
+  Gets solar generation and usage values from an Enphase solar controller.
+  Draws a graph with a red line for use and a green line for generated.
+  I'm using IDE 2.0.0-rc9.2 but v1 should work too.
 
-// Demonstrate graph widget functions with two independant trace instances
-// Multiple traces can be drawn at a time with multiple trace instances
-// Note: Traces are automatically clipped at graph boundaries by widget library
+  You'll need to install the ESP32 board files.
 
-// Requires widget library here:
-// https://github.com/Bodmer/TFT_eWidget
+  The following Libraries will be needed:
+  * TFT_eSPI
+  * TFT_eWidget
+  * ArduinoJson by Benoit
+*/
 
 
 #include <WiFi.h>
