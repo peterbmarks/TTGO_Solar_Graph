@@ -1,5 +1,5 @@
 # TTGO_Solar_Graph
-On a Liligo TTGO ESP32 board draw a graph of power generated and used from an Enphase controller
+On a Lilygo TTGO ESP32 board draw a graph of power generated and used from an Enphase controller
 
 Gets solar generation and usage values from an Enphase solar controller.
   Draws a graph with a red line for use and a green line for generated.
