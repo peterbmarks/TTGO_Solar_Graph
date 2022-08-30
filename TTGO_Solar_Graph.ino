@@ -21,7 +21,7 @@
 #include <TFT_eSPI.h>
 #include <TFT_eWidget.h>               // Widget library
 
-#define USE_SERIAL Serial
+//#define USE_SERIAL Serial
 
 #include "WifiCredentials.h"
 // Create this file with the following:
@@ -35,8 +35,8 @@ WiFiMulti wifiMulti;
 GraphWidget gr = GraphWidget(&tft);    // Graph widget
 
 // Traces are drawn on tft using graph instance
-TraceWidget tr1 = TraceWidget(&gr);    // Graph trace 1
-TraceWidget tr2 = TraceWidget(&gr);    // Graph trace 2
+TraceWidget genTrace = TraceWidget(&gr);    // Graph trace 1
+TraceWidget useTrace = TraceWidget(&gr);    // Graph trace 2
 
 // Note that the screen is rotated with USB on the left and "TTGO" label on the right
 const int kScreenResX = 240;
@@ -51,14 +51,14 @@ const int kSamples = 100; // number of power samples to keep
 
 const float kXMin = 0.0;
 const float kXMax = float(kSamples);
-const float kYMin = -10.0;  // minimum power generated
-const float kYMax = 3000.0; // maximum power generated
+const float kYMin = -10.0;  // minimum power 
+float gYMax = 10.0; // maximum power seen
 
 float gGenSamples[kSamples+1];
 float gUseSamples[kSamples+1];
 
 void setup() {
-  Serial.begin(115200);
+  //Serial.begin(115200);
   wifiMulti.addAP(kWifiNetwork, kWifiPassword);
   
   tft.begin();
@@ -68,13 +68,21 @@ void setup() {
   // Graph area is 200 pixels wide, 150 high, dark grey background
   gr.createGraph(kScreenResX - kXGraphMarginLeft - kXGraphMarginRight, kScreenResY - kYGraphMarginTop - kYGraphMarginBottom, tft.color565(5, 5, 5));
 
+  configGraphScale();
+
+  clearSamples();
+}
+
+// set the scale of the graph
+// this varies as the max Y can change
+void configGraphScale() {
   // x scale units is from 0 to 100, y scale units is -50 to 50
-  gr.setGraphScale(0.0, 100.0, kYMin, kYMax);
+  gr.setGraphScale(0.0, 100.0, kYMin, gYMax);
 
   // X grid starts at 0 with lines every 10 x-scale units
   // Y grid starts at -50 with lines every 25 y-scale units
   // blue grid
-  gr.setGraphGrid(0.0, 10.0, kYMin, (kYMax - kYMin) / 10.0, TFT_BLUE);
+  gr.setGraphGrid(0.0, 10.0, kYMin, (gYMax - kYMin) / 10.0, TFT_BLUE);
 
   // Draw empty graph, top left corner at 40,10 on TFT
   gr.drawGraph(kXGraphMarginLeft, kYGraphMarginTop);
@@ -88,16 +96,15 @@ void setup() {
   // Draw the y axis scale
   tft.setTextDatum(MR_DATUM); // Middle right text datum
   tft.drawNumber(kYMin, gr.getPointX(0.0), gr.getPointY(kYMin));
-  tft.drawNumber(0, gr.getPointX(0.0), gr.getPointY(0.0));
-  tft.drawNumber(kYMax, gr.getPointX(0.0), gr.getPointY(kYMax));
+  float halfValue = ((gYMax - kYMin) / 2) + kYMin;  
+  tft.drawNumber(halfValue, gr.getPointX(0.0), gr.getPointY(halfValue));
+  tft.drawNumber(gYMax, gr.getPointX(0.0), gr.getPointY(gYMax));
+  //Serial.printf("min = %f, half = %f, max = %f\n", kYMin, halfValue, gYMax);
 
   // Restart traces with new colours
-  tr1.startTrace(TFT_WHITE);
-  tr2.startTrace(TFT_YELLOW);
-
-  clearSamples();
+  genTrace.startTrace(TFT_WHITE);
+  useTrace.startTrace(TFT_YELLOW);
 }
-
 void clearSamples() {
   for(int i = 0; i < kSamples; i++) {
     gGenSamples[i] = 0.0;
@@ -110,6 +117,13 @@ void addSample(float gen, float use) {
   //USE_SERIAL.printf("gen = %f\n", value);
   gGenSamples[kSamples] = gen;
   gUseSamples[kSamples] = use;
+
+  if(gen > gYMax){
+    gYMax = gen;
+  }
+  if(use > gYMax){
+    gYMax = use;  
+  }  
 }
 
 void slideArrayBack() {
@@ -123,12 +137,12 @@ void plotData() {
   // Draw empty graph at 40,10 on display
   gr.drawGraph(kXGraphMarginLeft, kYGraphMarginTop);
   // Start new trace
-  tr1.startTrace(TFT_GREEN);
-  tr2.startTrace(TFT_RED);
+  genTrace.startTrace(TFT_GREEN);
+  useTrace.startTrace(TFT_RED);
 
   for(int i = 0; i < kSamples; i++) {
-    tr1.addPoint(i, gGenSamples[i]);
-    tr2.addPoint(i, gUseSamples[i]);
+    genTrace.addPoint(i, gGenSamples[i]);
+    useTrace.addPoint(i, gUseSamples[i]);
     //USE_SERIAL.printf("plot x = %d, y = %f\n", i, value); 
   }
 }
@@ -155,7 +169,7 @@ void loop() {
               DeserializationError error = deserializeJson(doc, payload);
 
             if (error) {
-            USE_SERIAL.printf("Json error");
+              //USE_SERIAL.printf("Json error");
             return;
           }
 
@@ -166,11 +180,12 @@ void loop() {
             addSample(genWattsNow, useWattsNow);
           }
       } else {
-          USE_SERIAL.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+          //USE_SERIAL.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
       }
 
       http.end();
   }
+  configGraphScale();
   plotData();
   delay(5000);
 }
