@@ -118,12 +118,17 @@ void addSample(float gen, float use) {
   gGenSamples[kSamples] = gen;
   gUseSamples[kSamples] = use;
 
+  // see if we need to increase gYMax
   if(gen > gYMax){
     gYMax = gen;
   }
   if(use > gYMax){
     gYMax = use;  
-  }  
+  }
+  // round up to the next multiple of 10
+  if (int(gYMax) % 10) {
+     gYMax = float(int(gYMax) + (10 - int(gYMax) % 10));
+  }
 }
 
 void slideArrayBack() {
