@@ -10,6 +10,8 @@
   * TFT_eSPI
   * TFT_eWidget
   * ArduinoJson by Benoit
+
+  This source at: https://github.com/peterbmarks/TTGO_Solar_Graph
 */
 
 
@@ -118,12 +120,15 @@ void addSample(float gen, float use) {
   gGenSamples[kSamples] = gen;
   gUseSamples[kSamples] = use;
 
+  // slowly drop gYMax over time
+  gYMax -= 10;
+
   // see if we need to increase gYMax
   if(gen > gYMax){
-    gYMax = gen;
+    gYMax = gen + 5;
   }
   if(use > gYMax){
-    gYMax = use;  
+    gYMax = use + 5;  
   }
   // round up to the next multiple of 10
   if (int(gYMax) % 10) {
