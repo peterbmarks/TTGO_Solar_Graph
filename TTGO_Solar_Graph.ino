@@ -60,7 +60,10 @@ float gGenSamples[kSamples+1];
 float gUseSamples[kSamples+1];
 
 void setup() {
-  //Serial.begin(115200);
+  Serial.begin(115200);
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB port only
+  }
   wifiMulti.addAP(kWifiNetwork, kWifiPassword);
   
   tft.begin();
@@ -107,6 +110,7 @@ void configGraphScale() {
   genTrace.startTrace(TFT_WHITE);
   useTrace.startTrace(TFT_YELLOW);
 }
+
 void clearSamples() {
   for(int i = 0; i < kSamples; i++) {
     gGenSamples[i] = 0.0;
@@ -114,9 +118,22 @@ void clearSamples() {
   }
 }
 
+float maxInSamples() {
+  float max = 0.0;
+  for(int i = 0; i < kSamples; i++) {
+    if(gGenSamples[i] > max) {
+      max = gGenSamples[i];
+    }
+    if(gUseSamples[i] > max) {
+      max = gUseSamples[i];
+    }
+  }
+  return max;
+}
+
 void addSample(float gen, float use) {
   slideArrayBack();
-  //USE_SERIAL.printf("gen = %f\n", value);
+  Serial.printf("gen = %f, use = %f\n", gen, use);
   gGenSamples[kSamples] = gen;
   gUseSamples[kSamples] = use;
 
@@ -124,16 +141,17 @@ void addSample(float gen, float use) {
   gYMax -= 10;
 
   // see if we need to increase gYMax
-  if(gen > gYMax){
-    gYMax = gen + 5;
+  float maxInArray = maxInSamples();
+  if(maxInArray > gYMax){
+    gYMax = maxInArray + 11;
   }
-  if(use > gYMax){
-    gYMax = use + 5;  
-  }
+  
+  Serial.printf("original gYMax = %f\n", gYMax);
   // round up to the next multiple of 10
   if (int(gYMax) % 10) {
      gYMax = float(int(gYMax) + (10 - int(gYMax) % 10));
   }
+  Serial.printf("rounded  gYMax = %f\n\n", gYMax);
 }
 
 void slideArrayBack() {
@@ -188,14 +206,14 @@ void loop() {
             long genWattsNow = doc["production"][1]["wNow"];
             long useWattsNow = doc["consumption"][0]["wNow"];
             addSample(genWattsNow, useWattsNow);
+            configGraphScale();
+            plotData();
           }
       } else {
-          //USE_SERIAL.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+          Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
       }
 
       http.end();
   }
-  configGraphScale();
-  plotData();
   delay(5000);
 }
