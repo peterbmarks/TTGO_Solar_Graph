@@ -103,7 +103,7 @@ void loop() {
                 tft.fillScreen(TFT_BLACK);
                 tft.drawString("K Index    Australia", 0, 10, 4);
                 tft.drawString(String(k_index), 90, 32, 8);
-                tft.drawString(analysis_time, 0, 120, 2);
+                tft.drawString("analysis_time: " + String(analysis_time), 0, 120, 2);
               } else {
                 tft.fillScreen(TFT_BLACK);
                 tft.drawString("No Data", 0, 30, 8);
