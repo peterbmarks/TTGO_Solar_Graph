@@ -54,14 +54,14 @@ void setup() {
   tft.setRotation(3);
   tft.fillScreen(TFT_BLACK);
 
-  tft.drawString("Starting", 10, 10, 4);
+  tft.drawString("Connecting to Wifi...", 0, 10, 4);
 }
 
 void loop() {  
 // wait for WiFi connection
   if((wifiMulti.run() == WL_CONNECTED)) {
     tft.fillScreen(TFT_BLACK);
-    tft.drawString("Connecting", 10, 10, 4);
+    tft.drawString("Connecting to BOM...", 0, 10, 4);
       HTTPClient http;
 
       // configure traged server and url
@@ -99,10 +99,11 @@ void loop() {
                 Serial.printf("K Index = %ld\n", k_index);
                 Serial.printf("analysis time = %s\n", analysis_time);
                 Serial.println("Serial print OK");
+
                 tft.fillScreen(TFT_BLACK);
-                tft.drawString("K Index", 10, 10, 4);
-                tft.drawString(String(k_index), 90, 30, 8);
-                tft.drawString(analysis_time, 5, 120, 2);
+                tft.drawString("K Index    Australia", 0, 10, 4);
+                tft.drawString(String(k_index), 90, 32, 8);
+                tft.drawString(analysis_time, 0, 120, 2);
               } else {
                 tft.fillScreen(TFT_BLACK);
                 tft.drawString("No Data", 0, 30, 8);
