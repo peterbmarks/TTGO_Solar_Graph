@@ -61,7 +61,10 @@ void loop() {
 // wait for WiFi connection
   if((wifiMulti.run() == WL_CONNECTED)) {
     tft.fillScreen(TFT_BLACK);
-    tft.drawString("Connecting to BOM...", 0, 10, 4);
+    tft.drawString("Connecting to", 0, 10, 4);
+    tft.drawString("The Bureau of ", 0, 40, 4);
+    tft.drawString("Metereorology", 0, 70, 4);
+    tft.drawString("(The Bureau)...", 0, 100, 4);
       HTTPClient http;
 
       // configure traged server and url
